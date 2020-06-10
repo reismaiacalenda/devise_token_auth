@@ -4,7 +4,7 @@ module DeviseTokenAuth
   class OmniauthCallbacksController < DeviseTokenAuth::ApplicationController
     attr_reader :auth_params
 
-    before_action :validate_auth_origin_url_param
+    # before_action :validate_auth_origin_url_param
 
     skip_before_action :set_user_by_token, raise: false
     skip_after_action :update_auth_header
@@ -20,7 +20,7 @@ module DeviseTokenAuth
 
       # preserve omniauth info for success route. ignore 'extra' in twitter
       # auth response to avoid CookieOverflow.
-      session['dta.omniauth.auth'] = request.env['omniauth.auth'].except('extra')
+      session['dta.omniauth.auth'] = request.env['omniauth.auth'].except('extra', 'credentials')
       session['dta.omniauth.params'] = request.env['omniauth.params']
 
       redirect_to redirect_route
