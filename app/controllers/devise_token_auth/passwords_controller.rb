@@ -33,34 +33,87 @@ module DeviseTokenAuth
 
     # this is where users arrive after visiting the password reset confirmation link
     def edit
-      # if a user is not found, return nil
-      @resource = resource_class.with_reset_password_token(resource_params[:reset_password_token])
+      resource = resource_class.reset_password_by_token({
+        reset_password_token: resource_params[:reset_password_token]
+      })
+      # self.resource = resource_class.new
+      # set_minimum_password_length
+      # resource.reset_password_token = params[:reset_password_token]
 
-      if @resource && @resource.reset_password_period_valid?
-        token = @resource.create_token unless require_client_password_reset_token?
+      if resource && resource.id
+        resource.password = resource_params[:password]
+        resource.password_confirmation = resource_params[:password_confirmation]
+        resource.allow_password_change = true
+        # begin
+        resource.save!
+
+
+        # client_id  = SecureRandom.urlsafe_base64(nil, false)
+        # token      = SecureRandom.urlsafe_base64(nil, false)
+        # token_hash = BCrypt::Password.create(token)
+        # expiry     = (Time.now + DeviseTokenAuth.token_lifespan).to_i
+
+        # resource.tokens[client_id] = {
+        #   token:  token_hash,
+        #   expiry: expiry
+        # }
+
+
 
         # ensure that user is confirmed
-        @resource.skip_confirmation! if confirmable_enabled? && !@resource.confirmed_at
+        # resource.skip_confirmation! if resource.devise_modules.include?(:confirmable) && !resource.confirmed_at
+
         # allow user to change password once without current_password
-        @resource.allow_password_change = true if recoverable_enabled?
+        # resource.allow_password_change = true;
 
-        @resource.save!
+        # resource.save!
+        # yield resource if block_given?
 
-        yield @resource if block_given?
+        render  status: 200, json: {
+          success: true,
+          message: "Nova senha atualizada com sucesso. Volte e faça novo login."
 
-        if require_client_password_reset_token?
-          redirect_to DeviseTokenAuth::Url.generate(@redirect_url, reset_password_token: resource_params[:reset_password_token])
-        else
-          redirect_header_options = { reset_password: true }
-          redirect_headers = build_redirect_headers(token.token,
-                                                    token.client,
-                                                    redirect_header_options)
-          redirect_to(@resource.build_auth_url(@redirect_url,
-                                               redirect_headers))
-        end
+            # token:          token,
+            # client_id:      client_id,
+            # expiry:         expiry,
+            # uid:            resource.uid,
+          }
       else
-        render_edit_error
+        render status: 422, json: {
+          success: false,
+          message: "Token para troca de senha expirado. Tente novamente."
+        }
       end
+      
+      
+      # if a user is not found, return nil
+      #@resource = resource_class.with_reset_password_token(resource_params[:reset_password_token])
+
+      #if @resource && @resource.reset_password_period_valid?
+      #  token = @resource.create_token unless require_client_password_reset_token?
+
+        # ensure that user is confirmed
+      #  @resource.skip_confirmation! if confirmable_enabled? && !@resource.confirmed_at
+        # allow user to change password once without current_password
+      #  @resource.allow_password_change = true if recoverable_enabled?
+
+      #  @resource.save!
+
+      #  yield @resource if block_given?
+
+      # if require_client_password_reset_token?
+      #    redirect_to DeviseTokenAuth::Url.generate(@redirect_url, reset_password_token: resource_params[:reset_password_token])
+      #  else
+      #    redirect_header_options = { reset_password: true }
+      #    redirect_headers = build_redirect_headers(token.token,
+      #                                              token.client,
+      #                                              redirect_header_options)
+      #    redirect_to(@resource.build_auth_url(@redirect_url,
+      #                                         redirect_headers))
+      #  end
+      #else
+      #  render_edit_error
+      #end
     end
 
     def update
