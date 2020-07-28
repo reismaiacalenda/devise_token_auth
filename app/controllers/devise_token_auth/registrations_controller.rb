@@ -23,7 +23,9 @@ module DeviseTokenAuth
       )
       
       if params['workspace_nome'].present?
-        @redirect_url += "?"
+        @redirect_url = request.headers['origin']
+        @redirect_url = @redirect_url.gsub('app', params["workspace_subdominio"])
+        @redirect_url = "/login/preparando?"
         @redirect_url += params.permit("workspace_convite_obrigatorio", "workspace_nome", "workspace_subdominio").to_query
       end
 
