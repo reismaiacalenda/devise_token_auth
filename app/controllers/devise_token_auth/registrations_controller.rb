@@ -21,6 +21,11 @@ module DeviseTokenAuth
         :confirm_success_url,
         DeviseTokenAuth.default_confirm_success_url
       )
+      
+      if params['workspace_nome'].present?
+        @redirect_url += "?"
+        @redirect_url += params.permit("workspace_convite_obrigatorio", "workspace_nome", "workspace_subdominio").to_query
+      end
 
       # success redirect url is required
       if confirmable_enabled? && !@redirect_url
