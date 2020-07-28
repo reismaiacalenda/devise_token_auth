@@ -23,7 +23,7 @@ module DeviseTokenAuth
       )
       
       if params['workspace_nome'].present?
-        @redirect_url += "/preparando?"
+        @redirect_url += "?"
         @redirect_url += params.permit("workspace_convite_obrigatorio", "workspace_nome", "workspace_subdominio").to_query
       end
 
