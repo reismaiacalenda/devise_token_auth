@@ -262,13 +262,24 @@ module DeviseTokenAuth
 
     def get_resource_from_auth_hash
       # find or create user by provider and provider uid
-      @resource = resource_class.where(
-        uid: auth_hash['uid'],
-        provider: auth_hash['provider']
-      ).first_or_initialize
+      @resource = resource_class.find_by(
+        email: auth_hash["info"]["email"],
+        provider: 'convidado'
+      )
 
-      if @resource.new_record?
+      if @resource.present?
+        @resource.uid = auth_hash['uid']
+        @resource.provider = auth_hash['provider']
         handle_new_resource
+      else
+        @resource = resource_class.where(
+          uid: auth_hash['uid'],
+          provider: auth_hash['provider']
+        ).first_or_initialize
+        
+        if @resource.new_record?
+          handle_new_resource
+        end
       end
 
       # sync user info with provider, update/generate auth token
