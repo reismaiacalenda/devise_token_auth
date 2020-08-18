@@ -63,6 +63,8 @@ module DeviseTokenAuth
         # don't send confirmation email!!!
         @resource.skip_confirmation!
       end
+      
+      @resource.token = @@at.to_hash if @@at.present?
 
       sign_in(:user, @resource, store: false, bypass: false)
 
@@ -95,6 +97,9 @@ module DeviseTokenAuth
     # are added as query params in our monkey patch to OmniAuth in engine.rb
     def omniauth_params
       unless defined?(@_omniauth_params)
+        if request.env["omniauth.auth"]&.extra&.ovo.present?
+          @@at = request.env["omniauth.auth"]&.extra&.ovo
+        end
         if request.env['omniauth.params'] && request.env['omniauth.params'].any?
           @_omniauth_params = request.env['omniauth.params']
         elsif session['dta.omniauth.params'] && session['dta.omniauth.params'].any?
