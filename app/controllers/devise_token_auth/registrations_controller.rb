@@ -140,10 +140,12 @@ module DeviseTokenAuth
     end
 
     def render_create_success
-      render json: {
+      response = {
         status: 'success',
         data:   resource_data
       }
+      response[:criar_token] = @tk unless Rails.env.production?
+      render json: response
     end
 
     def render_create_error
