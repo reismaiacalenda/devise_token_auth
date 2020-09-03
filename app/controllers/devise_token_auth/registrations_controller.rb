@@ -27,9 +27,9 @@ module DeviseTokenAuth
         @redirect_url = @redirect_url.gsub('app', params["workspace_subdominio"]) if @redirect_url.include? "app"
         @redirect_url += "?" #/login/preparando
         #@redirect_url += params.permit("workspace_convite_obrigatorio", "workspace_nome", "workspace_subdominio", "workspace_telefone").to_query
-        tk = Base64.encode64(params.permit("workspace_convite_obrigatorio", "workspace_nome", "workspace_subdominio",
+        @tk = Base64.encode64(params.permit("workspace_convite_obrigatorio", "workspace_nome", "workspace_subdominio",
           "workspace_telefone", "workspace_faixa_colaboradores", "workspace_plano", "workspace_periodo").to_query)
-        @redirect_url += "criar_token=#{tk}"
+        @redirect_url += "criar_token=#{@tk}"
         @redirect_url = CGI::escape @redirect_url
       end
 
