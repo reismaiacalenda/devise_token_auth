@@ -28,7 +28,7 @@ module DeviseTokenAuth
         @redirect_url += "?" #/login/preparando
         @tk = Base64.encode64(params.permit("workspace_convite_obrigatorio", "workspace_nome", "workspace_subdominio",
           "workspace_telefone", "workspace_faixa_colaboradores", "workspace_plano", "workspace_periodo").to_query)
-        @redirect_url += "criar_token=#{@tk}"
+        @redirect_url += "criar_token=#{CGI::escape(@tk)}"
         # @redirect_url = CGI::escape @redirect_url
       end
 
@@ -57,7 +57,8 @@ module DeviseTokenAuth
           # user will require email authentication
           @redirect_url = @resource.send_confirmation_instructions({
             client_config: params[:config_name],
-            redirect_url: @redirect_url
+            redirect_url: @redirect_url,
+            tk: @tk
             # api.calend.aomc.br/auth/confirmation?confirmation_token=98jiud98asdjas98djas9d8asj&redirect_url=luanda.calenda.com.br/create_token=0912okadspodkaspodkaspdoakdpos
           })
         end
