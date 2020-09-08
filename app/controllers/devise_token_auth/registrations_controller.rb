@@ -22,15 +22,14 @@ module DeviseTokenAuth
         DeviseTokenAuth.default_confirm_success_url
       )
       
+      @redirect_url = request.headers['origin']
       if params['workspace_nome'].present?
-        @redirect_url = request.headers['origin']
-        @redirect_url = @redirect_url.gsub('app', params["workspace_subdominio"]) if @redirect_url.include? "app"
+        # @redirect_url = @redirect_url.gsub('app', params["workspace_subdominio"]) if @redirect_url.include? "app"
         @redirect_url += "?" #/login/preparando
-        #@redirect_url += params.permit("workspace_convite_obrigatorio", "workspace_nome", "workspace_subdominio", "workspace_telefone").to_query
         @tk = Base64.encode64(params.permit("workspace_convite_obrigatorio", "workspace_nome", "workspace_subdominio",
           "workspace_telefone", "workspace_faixa_colaboradores", "workspace_plano", "workspace_periodo").to_query)
         @redirect_url += "criar_token=#{@tk}"
-        @redirect_url = CGI::escape @redirect_url
+        # @redirect_url = CGI::escape @redirect_url
       end
 
       # success redirect url is required
@@ -56,9 +55,10 @@ module DeviseTokenAuth
 
         unless @resource.confirmed?
           # user will require email authentication
-          @resource.send_confirmation_instructions({
+          @redirect_url = @resource.send_confirmation_instructions({
             client_config: params[:config_name],
             redirect_url: @redirect_url
+            # api.calend.aomc.br/auth/confirmation?confirmation_token=98jiud98asdjas98djas9d8asj&redirect_url=luanda.calenda.com.br/create_token=0912okadspodkaspodkaspdoakdpos
           })
         end
 
@@ -144,7 +144,7 @@ module DeviseTokenAuth
         status: 'success',
         data:   resource_data
       }
-      response[:criar_token] = @tk unless Rails.env.production?
+      response[:redirect_url] = @redirect_url unless Rails.env.production?
       render json: response
     end
 
