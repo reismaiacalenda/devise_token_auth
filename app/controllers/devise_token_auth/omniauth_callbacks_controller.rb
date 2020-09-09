@@ -64,7 +64,7 @@ module DeviseTokenAuth
         @resource.skip_confirmation!
       end
       
-      @resource.token = @@at.to_hash if @@at.present?
+      @resource.token = @@at.to_hash if defined?(@@at) && @@at.present?
 
       sign_in(:user, @resource, store: false, bypass: false)
 
