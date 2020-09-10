@@ -275,6 +275,9 @@ module DeviseTokenAuth
       )
 
       if @resource.present?
+        if @resource.provider == "email"
+          raise "Email já está em uso. Favor entre com sua senha de acesso."
+        end
         @resource.uid = auth_hash['uid']
         @resource.provider = auth_hash['provider']
         handle_new_resource
