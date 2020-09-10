@@ -270,10 +270,9 @@ module DeviseTokenAuth
     def get_resource_from_auth_hash
       # find or create user by provider and provider uid
       @resource = resource_class.find_by(
-        email: auth_hash["info"]["email"],
-        provider: 'convidado'
+        email: auth_hash["info"]["email"]
       )
-
+      # provider: 'convidado'
       if @resource.present?
         if @resource.provider == "email"
           raise "Email já está em uso. Favor entre com sua senha de acesso."
