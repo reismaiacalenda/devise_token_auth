@@ -13,7 +13,7 @@ module DeviseTokenAuth
     def create
       # Check
       field = (resource_params.keys.map(&:to_sym) & resource_class.authentication_keys).first
-
+      
       @resource = nil
       if field
         q_value = get_case_insensitive_field_from_resource_params(field)
@@ -41,7 +41,20 @@ module DeviseTokenAuth
           render_create_error_not_confirmed
         end
       else
-        render_create_error_bad_credentials
+        @resource = resource_class.find_by(email: q_value, provider: "convidado")
+        if @resource.present? && @resource.confirmed_at.present?
+          @resource.password = @resource.password_confirmation = resource_params[:password]
+          @resource.provider = "email"
+
+          @token = @resource.create_token
+          @resource.save
+
+          sign_in(:user, @resource, store: false, bypass: false)
+
+          render_create_success
+        else
+          render_create_error_bad_credentials
+        end
       end
     end
 
