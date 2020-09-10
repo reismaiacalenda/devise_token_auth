@@ -62,17 +62,29 @@ module DeviseTokenAuth::Concerns::User
       opts[:to] = unconfirmed_email if pending_reconfirmation?
       
       if opts[:redirect_url].present?
-        if opts[:redirect_url].include?("?")
+        if opts[:redirect_url].include?("?criar_token")
           opts[:redirect_url] += "&confirmation_token=#{@raw_confirmation_token}" 
+        end
+        if opts[:acesso_convidado].present?
+          if opts[:redirect_url].include?("?")
+            opts[:redirect_url] += "&#{opts[:acesso_convidado]}"
+          else
+            opts[:redirect_url] += "?#{opts[:acesso_convidado]}"
+          end
         end
       end
       opts[:redirect_url] ||= DeviseTokenAuth.default_confirm_success_url
 
       send_devise_notification(:confirmation_instructions, @raw_confirmation_token, opts)
 
-      if opts[:redirect_url].exclude?("?") && Rails.env.test?
-        opts[:redirect_url] += "?fake_confirmation_token=#{@raw_confirmation_token}"
+      if Rails.env.test?
+        if opts[:redirect_url].include?("?")
+          opts[:redirect_url] += "&fake_confirmation_token=#{@raw_confirmation_token}"
+        else
+          opts[:redirect_url] += "?fake_confirmation_token=#{@raw_confirmation_token}"
+        end
       end
+
       opts[:redirect_url]
     end
 
