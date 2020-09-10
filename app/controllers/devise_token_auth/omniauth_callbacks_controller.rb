@@ -65,6 +65,8 @@ module DeviseTokenAuth
       end
       
       @resource.token = @@at.to_hash if defined?(@@at) && @@at.present?
+      
+      @resource.origin = @_omniauth_params["auth_origin_url"]
 
       sign_in(:user, @resource, store: false, bypass: false)
 
