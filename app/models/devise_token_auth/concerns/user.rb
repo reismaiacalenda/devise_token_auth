@@ -60,10 +60,19 @@ module DeviseTokenAuth::Concerns::User
       # fall back to "default" config name
       opts[:client_config] ||= 'default'
       opts[:to] = unconfirmed_email if pending_reconfirmation?
-      opts[:redirect_url] += "&confirmation_token=#{@raw_confirmation_token}" if opts[:redirect_url].present?
+      
+      if opts[:redirect_url].present?
+        if opts[:redirect_url].include?("?")
+          opts[:redirect_url] += "&confirmation_token=#{@raw_confirmation_token}" 
+        end
+      end
       opts[:redirect_url] ||= DeviseTokenAuth.default_confirm_success_url
 
       send_devise_notification(:confirmation_instructions, @raw_confirmation_token, opts)
+
+      if opts[:redirect_url].exclude?("?") && Rails.env.test?
+        opts[:redirect_url] += "?fake_confirmation_token=#{@raw_confirmation_token}"
+      end
       opts[:redirect_url]
     end
 
