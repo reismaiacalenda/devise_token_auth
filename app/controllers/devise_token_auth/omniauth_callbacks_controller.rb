@@ -102,6 +102,9 @@ module DeviseTokenAuth
         if request.env["omniauth.auth"]&.extra&.ovo.present?
           @@at = request.env["omniauth.auth"]&.extra&.ovo
         end
+        if request.env["omniauth.auth"]&.extra&.raw_info.present?
+          @@display_name = request.env["omniauth.auth"]&.extra&.raw_info["DisplayName"]
+        end
         if request.env['omniauth.params'] && request.env['omniauth.params'].any?
           @_omniauth_params = request.env['omniauth.params']
         elsif session['dta.omniauth.params'] && session['dta.omniauth.params'].any?
@@ -293,11 +296,14 @@ module DeviseTokenAuth
 
       # sync user info with provider, update/generate auth token
       assign_provider_attrs(@resource, auth_hash)
-
       # assign any additional (whitelisted) attributes
       if assign_whitelisted_params?
         extra_params = whitelisted_params
         @resource.assign_attributes(extra_params) if extra_params
+      end
+
+      if defined?(@@display_name) && @@display_name.present?
+        @resource.name = @@display_name
       end
 
       @resource
