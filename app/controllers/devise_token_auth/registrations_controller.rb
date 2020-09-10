@@ -50,6 +50,8 @@ module DeviseTokenAuth
         @resource.skip_confirmation_notification!
       end
 
+      @resource.origin = request.headers['origin']
+      
       if @resource.save
         yield @resource if block_given?
 
