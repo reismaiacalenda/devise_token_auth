@@ -83,7 +83,6 @@ module DeviseTokenAuth::Concerns::User
       send_devise_notification(:confirmation_instructions, @raw_confirmation_token, opts)
 
       if Rails.env.test?
-        redirect = jaksdjk
         if opts[:redirect_url].include?("?")
           opts[:redirect_url] += "&fake_confirmation_token=#{@raw_confirmation_token}"
         else
