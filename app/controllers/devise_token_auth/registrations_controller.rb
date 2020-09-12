@@ -22,7 +22,9 @@ module DeviseTokenAuth
         DeviseTokenAuth.default_confirm_success_url
       )
       
+      
       @redirect_url = request.headers['origin']
+      @tk = ""
       if params['workspace_nome'].present?
         # @redirect_url = @redirect_url.gsub('app', params["workspace_subdominio"]) if @redirect_url.include? "app"
         @redirect_url += "?" #/login/preparando
