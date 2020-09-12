@@ -63,7 +63,12 @@ module DeviseTokenAuth::Concerns::User
       
       if opts[:redirect_url].present?
         if opts[:redirect_url].include?("?criar_token")
-          opts[:redirect_url] += "&confirmation_token=#{@raw_confirmation_token}" 
+          criar_token = opts[:tk]
+          criar_token += "&confirmation_token=#{@raw_confirmation_token}"
+          opts[:redirect_url] += CGI::escape(Base64.encode64(criar_token))
+          # opts[:redirect_url] 
+          #TODO: adicionar confirmatiok token dentro do criar_token pra seguir fluxo simples de descriptagem. para isso, o processo deve ser feito aqui e nao na registration, retirar de la.
+          # opts[:redirect_url] += "&confirmation_token=#{@raw_confirmation_token}" 
         end
         if opts[:acesso_convidado].present?
           if opts[:redirect_url].include?("?")
@@ -78,6 +83,7 @@ module DeviseTokenAuth::Concerns::User
       send_devise_notification(:confirmation_instructions, @raw_confirmation_token, opts)
 
       if Rails.env.test?
+        redirect = jaksdjk
         if opts[:redirect_url].include?("?")
           opts[:redirect_url] += "&fake_confirmation_token=#{@raw_confirmation_token}"
         else
