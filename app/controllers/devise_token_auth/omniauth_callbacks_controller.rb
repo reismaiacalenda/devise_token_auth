@@ -12,7 +12,6 @@ module DeviseTokenAuth
     # intermediary route for successful omniauth authentication. omniauth does
     # not support multiple models, so we must resort to this terrible hack.
     def redirect_callbacks
-
       # derive target redirect route from 'resource_class' param, which was set
       # before authentication.
       devise_mapping = get_devise_mapping
@@ -64,13 +63,23 @@ module DeviseTokenAuth
         @resource.skip_confirmation!
       end
       
-      @resource.token = @@at.to_hash if defined?(@@at) && @@at.present?
+      #procura na tabela temporaria o token criado para esse email e pra essa session
+      tt = TemporaryToken.where(email: @resource.email, session_id: session["session_id"])&.first
+
+      raise "Não foi possível recuperar seu token de acesso." unless tt.present?
+      
+      @resource.token = tt.token
+      name = tt.display_name || tt.email
+      @resource.name = name if @resource.name.blank?
       
       @resource.origin = @_omniauth_params["auth_origin_url"]
 
       sign_in(:user, @resource, store: false, bypass: false)
 
       @resource.save!
+
+      # limpa da tabela temporaria o token
+      tt.destroy!
 
       yield @resource if block_given?
 
@@ -98,13 +107,8 @@ module DeviseTokenAuth
     # after use.  In the failure case, finally, the omniauth params
     # are added as query params in our monkey patch to OmniAuth in engine.rb
     def omniauth_params
+      store_token_pessoa         
       unless defined?(@_omniauth_params)
-        if request.env["omniauth.auth"]&.extra&.ovo.present?
-          @@at = request.env["omniauth.auth"]&.extra&.ovo
-        end
-        if request.env["omniauth.auth"]&.extra&.raw_info.present?
-          @@display_name = request.env["omniauth.auth"]&.extra&.raw_info["DisplayName"]
-        end
         if request.env['omniauth.params'] && request.env['omniauth.params'].any?
           @_omniauth_params = request.env['omniauth.params']
         elsif session['dta.omniauth.params'] && session['dta.omniauth.params'].any?
@@ -118,6 +122,20 @@ module DeviseTokenAuth
       end
       @_omniauth_params
 
+    end
+
+    def store_token_pessoa
+      if request.env["omniauth.auth"]&.extra&.ovo.present?
+        email = request.env["omniauth.auth"]&.extra&.raw_info["email"] || request.env["omniauth.auth"]&.extra&.raw_info["EmailAddress"]
+        return if TemporaryToken.where(email: email, session_id: session["session_id"]).present?
+
+        tt = TemporaryToken.new
+        tt.token = request.env["omniauth.auth"].extra.ovo.to_hash 
+        tt.email = email
+        tt.session_id = session["session_id"]
+        tt.display_name = request.env["omniauth.auth"]&.extra&.raw_info["name"] || request.env["omniauth.auth"]&.extra&.raw_info["DisplayName"]
+        tt.save!
+      end
     end
 
     # break out provider attribute assignment for easy method extension
@@ -300,10 +318,6 @@ module DeviseTokenAuth
       if assign_whitelisted_params?
         extra_params = whitelisted_params
         @resource.assign_attributes(extra_params) if extra_params
-      end
-
-      if defined?(@@display_name) && @@display_name.present?
-        @resource.name = @@display_name
       end
 
       @resource
