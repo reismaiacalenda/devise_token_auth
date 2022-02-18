@@ -84,6 +84,10 @@ module DeviseTokenAuth
     end
 
     def update
+      if @resource.blank? && params[:reset_password_token].present?
+        @resource = resource_class.with_reset_password_token params[:reset_password_token]
+      end
+      
       if @resource
         if @resource.send(resource_update_method, account_update_params)
           yield @resource if block_given?
