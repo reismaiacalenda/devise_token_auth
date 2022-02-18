@@ -14,10 +14,15 @@ module DeviseTokenAuth
 
       if @resource
         yield @resource if block_given?
+
+        url = URI.parse @redirect_url
+        url.path = ''
+        url.query = nil
+
         @resource.send_reset_password_instructions(
           email: @email,
           provider: 'email',
-          redirect_url: @redirect_url,
+          redirect_url: url.to_s,
           client_config: params[:config_name]
         )
 
