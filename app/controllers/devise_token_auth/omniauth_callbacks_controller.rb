@@ -55,7 +55,7 @@ module DeviseTokenAuth
 
     def omniauth_success
       get_resource_from_auth_hash
-      return unless usuario_convidado?
+      return unless permit_login?
       set_token_on_resource
       create_auth_params
 
@@ -324,28 +324,15 @@ module DeviseTokenAuth
       @resource
     end
 
-    def usuario_convidado?
-      if Rails.env.production?
-        subdominio = @_omniauth_params['auth_origin_url'].split('/')[2].split('.')[0]
-      else
-        subdominio = Cliente.first.subdominio
-      end
+    def permit_login?
+      subdomain ||= @_omniauth_params['auth_origin_url'].split('/')[2].split('.')[0] if Rails.env.production?
 
-      cliente = Cliente.find_by(subdominio: subdominio)
+      response = @resource.permit_login_from_devise_omniauth_callback?(subdomain)
 
-      return true unless cliente.convite_obrigatorio?
-      
-      workspace_unidades = cliente&.unidades&.pluck(:id)
-      workspace_unidades ||= []
-      
-      funcionario_unidades = @resource.unidade_ids
-      funcionario_unidades ||= []
+      return true if response.blank?
 
-      usuario_pertence_ao_workspace = (funcionario_unidades & workspace_unidades).present?
+      redirect_to response
 
-      return true if usuario_pertence_ao_workspace
-
-      redirect_to exceptions_convite_obrigatorio_path
       false
     end
   end
