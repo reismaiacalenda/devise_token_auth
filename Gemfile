@@ -58,3 +58,4 @@ end
 gem 'rails'
 gem 'mongoid'
 gem 'mongoid-locker'
+gem 'sass-rails', '~> 6.0'
