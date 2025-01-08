@@ -4,7 +4,7 @@ module DeviseTokenAuth::Concerns::ActiveRecordSupport
   extend ActiveSupport::Concern
 
   included do
-    serialize :tokens, DeviseTokenAuth::Concerns::TokensSerialization
+    serialize_with :tokens, DeviseTokenAuth::Concerns::TokensSerialization
   end
 
   class_methods do
