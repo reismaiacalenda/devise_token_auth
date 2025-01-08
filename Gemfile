@@ -55,17 +55,6 @@ group :development do
   gem 'github_changelog_generator'
 end
 
-if ENV['MONGOID_VERSION']
-  case ENV['MONGOID_VERSION']
-  when /^7/
-    gem 'mongoid', '~> 7'
-  when /^6/
-    gem 'mongoid', '~> 6'
-  when /^5/
-    gem 'mongoid', '~> 5'
-  else
-    gem 'mongoid', '>= 5'
-  end
-
-  gem 'mongoid-locker', '~> 1.0'
-end
+gem 'rails'
+gem 'mongoid'
+gem 'mongoid-locker'
