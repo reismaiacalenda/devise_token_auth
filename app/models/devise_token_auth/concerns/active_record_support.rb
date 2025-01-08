@@ -4,7 +4,11 @@ module DeviseTokenAuth::Concerns::ActiveRecordSupport
   extend ActiveSupport::Concern
 
   included do
-    serialize_with :tokens, DeviseTokenAuth::Concerns::TokensSerialization
+    before_save :serialize_tokens
+
+    def serialize_tokens
+      self.tokens = DeviseTokenAuth::Concerns::TokensSerialization.dump(tokens)
+    end
   end
 
   class_methods do
