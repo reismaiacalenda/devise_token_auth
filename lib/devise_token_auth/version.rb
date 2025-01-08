@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module DeviseTokenAuth
-  VERSION = '1.1.28'.freeze
+  VERSION = '1.1.29'.freeze
 end
